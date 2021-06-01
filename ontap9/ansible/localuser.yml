@@ -1,0 +1,49 @@
+#! /usr/bin/ansible-playbook
+---
+- hosts: localhost
+  connection: local
+  collections: 
+  - netapp.ontap
+  - ansible.posix.profile_tasks
+  tasks:
+  - name: "local hosers"
+    na_ontap_command:
+      hostname: "gsdc-aut-ontap97-1"
+      username: "admin"
+      password: "NetApp123!"
+      https: true
+      validate_certs: false
+      command: ['vserver services name-service unix-user show']
+#      command: ['set -showallfields true -showseparator ",";vserver services name-service unix-user show']
+      return_dict: true
+    register: result
+  - name: "result"
+    debug:
+      var: result
+#  - name: parse
+#    set_fact:
+#      dict: "{{ result.msg.split('\n') }}"
+  - name: "result"
+    debug:
+      var: dict
+  - name: temp file
+    copy:
+      dest: ./ansi_temp
+      content: "{{ dict | string }}"
+#  - name: more parse
+#    set_fact:
+#      dict2: "{{ dict(item.split(',') | zip(header)) }}"
+#    loop: "{{ dict | list }}"
+#    when: item is match(".*,.*")
+  - name: "result"
+    debug:
+      var: dict2
+  - name: load csv
+    read_csv:
+      path: ./test.csv
+    register: dict3
+    delegate_to: localhost
+  - name: "result"
+    debug:
+      var: dict3
+
